@@ -89,7 +89,6 @@ namespace DlpRawPr
 
                 //Console.WriteLine ("{0}",  System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
 
-                Console.WriteLine("Aufruf :");
                 Console.WriteLine("{0} <Drucker-RawDatei> [<Windowsdruckertreiber>] [/FORMFEED] [/XPS]", Application.ProductName);
                 Console.WriteLine("");
                 Console.WriteLine("Version: {0}", Application.ProductVersion);
