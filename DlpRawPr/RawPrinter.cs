@@ -47,7 +47,7 @@ namespace DlpRawPr
         // When the function is given a printer name and an unmanaged array
         // of bytes, the function sends those bytes to the print queue.
         // Returns true on success, false on failure.
-        public static bool SendBytesToPrinter(string szPrinterName, IntPtr pBytes, Int32 dwCount)
+        public static bool SendBytesToPrinter(string szPrinterName, IntPtr pBytes, Int32 dwCount, bool useXPS)
         {
             Int32 dwError = 0, dwWritten = 0;
             IntPtr hPrinter = new IntPtr(0);
@@ -55,8 +55,15 @@ namespace DlpRawPr
             bool bSuccess = false; // Assume failure unless you specifically succeed.
 
             di.pDocName = "DLPRawPr Druckauftrag";
-            //di.pDataType = "XPS_PASS"; //RAW";
-            di.pDataType = "RAW";
+            if (useXPS)
+            {
+                di.pDataType = "XPS_PASS";  // wird benötigt bei Typ4 Druckertreiber unter Windows 8 und Windows 10
+                // siehe auch: https://support.microsoft.com/en-us/kb/2779300
+            }
+            else
+            {
+                di.pDataType = "RAW";
+            }
 
             // Open the printer.
             if (OpenPrinter(szPrinterName.Normalize(), out hPrinter, IntPtr.Zero))
@@ -84,7 +91,7 @@ namespace DlpRawPr
             return bSuccess;
         }
 
-        public static bool SendFileToPrinter(string szPrinterName, string szFileName, bool appendFormfeed)
+        public static bool SendFileToPrinter(string szPrinterName, string szFileName, bool appendFormfeed, bool useXPS)
         {
             // Open the file.
             FileStream fs = new FileStream(szFileName, FileMode.Open);
@@ -113,13 +120,13 @@ namespace DlpRawPr
             // Copy the managed byte array into the unmanaged array.
             Marshal.Copy(bytes, 0, pUnmanagedBytes, nLength);
             // Send the unmanaged bytes to the printer.
-            bSuccess = SendBytesToPrinter(szPrinterName, pUnmanagedBytes, nLength);
+            bSuccess = SendBytesToPrinter(szPrinterName, pUnmanagedBytes, nLength, useXPS);
             // Free the unmanaged memory that you allocated earlier.
             Marshal.FreeCoTaskMem(pUnmanagedBytes);
             return bSuccess;
         }
 
-        public static bool SendStringToPrinter(string szPrinterName, string szString, bool appendFormfeed)
+        public static bool SendStringToPrinter(string szPrinterName, string szString, bool appendFormfeed, bool useXPS)
         {
             IntPtr pBytes;
             Int32 dwCount;
@@ -133,7 +140,7 @@ namespace DlpRawPr
             // the string to ANSI text.
             pBytes = Marshal.StringToCoTaskMemAnsi(szString);
             // Send the converted ANSI string to the printer.
-            SendBytesToPrinter(szPrinterName, pBytes, dwCount);
+            SendBytesToPrinter(szPrinterName, pBytes, dwCount, useXPS);
             Marshal.FreeCoTaskMem(pBytes);
             return true;
         }

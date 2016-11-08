@@ -26,6 +26,7 @@ namespace DlpRawPr
             bool run = true;
             bool showhelp = false;
             bool appendformfeed = false;
+            bool useXPS = false;
             string parameter = "";
 
             if (args.Length == 0)
@@ -60,15 +61,19 @@ namespace DlpRawPr
                         {
                             appendformfeed = true;
                         }
-	                }
-                    
-                }
+                        if (para.ToUpper() == "/XPS")
+                        {
+                            useXPS = true;
+                        }
+                    }
+
+            }
 
             if (!showhelp)
             {
                 if (run)
                 {
-                    PrintRaw(args[0], parameter, appendformfeed);
+                    PrintRaw(args[0], parameter, appendformfeed, useXPS);
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
                 }
@@ -81,16 +86,23 @@ namespace DlpRawPr
 
                 productAttribute = (System.Reflection.AssemblyProductAttribute)Attribute.GetCustomAttribute(System.Reflection.Assembly.GetExecutingAssembly(), typeof(System.Reflection.AssemblyProductAttribute));
                 versionAttribute = (System.Reflection.AssemblyVersionAttribute) Attribute.GetCustomAttribute (System.Reflection.Assembly.GetExecutingAssembly (), typeof (System.Reflection.AssemblyVersionAttribute));
-                 
+
                 //Console.WriteLine ("{0}",  System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
 
-                Console.WriteLine("Aufruf : {0} <Drucker-RawDatei> [<Windowsdruckertreiber>] [/FORMFEED]", Application.ProductName);
+                Console.WriteLine("Aufruf :");
+                Console.WriteLine("{0} <Drucker-RawDatei> [<Windowsdruckertreiber>] [/FORMFEED] [/XPS]", Application.ProductName);
+                Console.WriteLine("");
                 Console.WriteLine("Version: {0}", Application.ProductVersion);
+                Console.WriteLine("");
                 Console.WriteLine("Erlaubt das Schreiben von Daten direkt in der vom Drucker verstandenen Sprache.");
                 Console.WriteLine("Versteht ein Druckertreiber das verwendete Format nicht, kann es auch sein,");
                 Console.WriteLine("dass die Ausgabe einfach verschluckt wird. (pdffactory, Fritzfax usw.)");
                 Console.WriteLine("");
-                Console.WriteLine("Durch Aufruf mit dem Parameter /DRUCKERAUSWAHL werden die installierten Drucker angezeigt.");
+                Console.WriteLine("Bei V4-Druckertreiber unter Windows 8 und Windows 10 ist /XPS anzugeben, sonst");
+                Console.WriteLine("gibt es keinen Ausdruck und es wird ein Fehler in der Ereignisanzeige erzeugt.");
+                Console.WriteLine("");
+                Console.WriteLine("Durch Aufruf mit dem Parameter /DRUCKERAUSWAHL werden die installierten Drucker");
+                Console.WriteLine("angezeigt.");
             }
         }
 
@@ -102,7 +114,7 @@ namespace DlpRawPr
             }
         }
 
-        private static void PrintRaw(string printerRawDataFile, string printerDriver, bool appendFormfeed)
+        private static void PrintRaw(string printerRawDataFile, string printerDriver, bool appendFormfeed, bool useXPS)
         {
             var ps = new PrinterSettings ();
             var encoding = Encoding.ASCII;
@@ -110,7 +122,7 @@ namespace DlpRawPr
             if (printerDriver == String.Empty || printerDriver.ToUpper() == "UNBEKANNT" || printerDriver.ToUpper () == "STANDARD")
                 printerDriver = ps.PrinterName;
             
-            RawPrinterHelper.SendFileToPrinter(printerDriver, printerRawDataFile, appendFormfeed);
+            RawPrinterHelper.SendFileToPrinter(printerDriver, printerRawDataFile, appendFormfeed, useXPS);
 
             // Der Weg über den Streamreader sorgt trotz Encoding für verpuzzelte Umlaute:
             //var sr = new StreamReader(printerRawDataFile, System.Text.Encoding.GetEncoding(850)); // encoding);
